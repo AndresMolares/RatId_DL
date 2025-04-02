@@ -30,37 +30,26 @@ def _correlation_feature(matrix_coocurrence):
     correlation = graycoprops(matrix_coocurrence, 'correlation')
     return correlation
 
-def _asm_feature(matrix_coocurrence):
-    asm = graycoprops(matrix_coocurrence, 'ASM')
-    return asm
+def _compute_feats(image, kernels):
 
-def _compute_feats(image, kernels, complet=True):
-	if complet:
-		feats = np.zeros((len(kernels) * 18), dtype=np.double)
-	else:
-		feats = np.zeros((len(kernels) * 6), dtype=np.double)
+	feats = np.zeros((len(kernels) * 15), dtype=np.double)
 	for k, kernel in enumerate(kernels):
 		for chanel in range(3):
 			filtered = nd.convolve(image[:, :, chanel], kernel, mode='wrap')
-			if complet:
-				bins32 = np.array(
-					[0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160,
-					 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 255])  # 32-bit
-				np.clip(filtered, 0, 255, out=filtered)
-				image_aux = filtered.astype('uint8')
-				inds = np.digitize(image_aux, bins32)
-				max_value = inds.max() + 1
-				matrix_coocurrence = graycomatrix(inds, [1], [0],
-												  levels=max_value, normed=False, symmetric=False)
-				feats[(k * 18) + (chanel * 6 + 0)] = _correlation_feature(matrix_coocurrence)
-				feats[(k * 18) + (chanel * 6 + 1)] = _dissimilarity_feature(matrix_coocurrence)
-				feats[(k * 18) + (chanel * 6 + 2)] = _homogeneity_feature(matrix_coocurrence)
-				feats[(k * 18) + (chanel * 6 + 3)] = _energy_feature(matrix_coocurrence)
-				feats[(k * 18) + (chanel * 6 + 4)] = _correlation_feature(matrix_coocurrence)
-				feats[(k * 18) + (chanel * 6 + 5)] = _asm_feature(matrix_coocurrence)
-			else:
-				feats[(k * 6) + (chanel * 2 + 0)] = filtered.mean()
-				feats[(k * 6) + (chanel * 2 + 1)] = filtered.var()
+			bins32 = np.array(
+				[0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160,
+				 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 255])  # 32-bit
+			np.clip(filtered, 0, 255, out=filtered)
+			image_aux = filtered.astype('uint8')
+			inds = np.digitize(image_aux, bins32)
+			max_value = inds.max() + 1
+			matrix_coocurrence = graycomatrix(inds, [1], [0], levels=max_value, normed=False, symmetric=False)
+			feats[(k * 15) + (chanel * 5 + 0)] = _contrast_feature(matrix_coocurrence)
+			feats[(k * 15) + (chanel * 5 + 1)] = _dissimilarity_feature(matrix_coocurrence)
+			feats[(k * 15) + (chanel * 5 + 2)] = _homogeneity_feature(matrix_coocurrence)
+			feats[(k * 15) + (chanel * 5 + 3)] = _energy_feature(matrix_coocurrence)
+			feats[(k * 15) + (chanel * 5 + 4)] = _correlation_feature(matrix_coocurrence)
+
 	return feats
 
 def _train_model(model, type_model, imageShape, classes, training_dataset, params, dataAugmentation=False):
@@ -79,16 +68,18 @@ def _train_model(model, type_model, imageShape, classes, training_dataset, param
 		kernels = []
 		for theta in range(4):
 			theta = theta / 4. * np.pi
-			for sigma in (1, 3):
-				for frequency in [0.25]:
-					kernel = np.real(gabor_kernel(frequency, theta=theta,
-												  sigma_x=sigma, sigma_y=sigma))
-					kernels.append(kernel)
+			for sigma, frequency in [[2.24, 0.25], [4.48, 0.125]]:
+				kernel = np.real(gabor_kernel(frequency, theta=theta, sigma_x=sigma, sigma_y=sigma))
+				kernels.append(kernel)
 
 		x_train_gabor = []
 		for f1 in x_data:
 			x_train_gabor.append(_compute_feats(f1, kernels))
 		pca = PCA(n_components=0.999, svd_solver='full').fit(x_train_gabor, y_data)
+
+		n_componentes = pca.n_components_
+		print("Número de componentes seleccionados:", n_componentes)
+
 		x_train_gabor = pca.transform(x_train_gabor)
 
 		if not model:
@@ -172,11 +163,9 @@ def test_model(model, pca, type_model, test_dataset):
 		kernels = []
 		for theta in range(4):
 			theta = theta / 4. * np.pi
-			for sigma in (1, 3):
-				for frequency in [0.25]:
-					kernel = np.real(gabor_kernel(frequency, theta=theta,
-												  sigma_x=sigma, sigma_y=sigma))
-					kernels.append(kernel)
+			for sigma, frequency in [[2.24, 0.25], [4.48, 0.125]]:
+				kernel = np.real(gabor_kernel(frequency, theta=theta, sigma_x=sigma, sigma_y=sigma))
+				kernels.append(kernel)
 
 		x_test_gabor = []
 		for f1 in x_test:
