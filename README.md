@@ -1,4 +1,4 @@
-# Rat identification using deep learning
+# Who’s that rat? Setting the score for unmarked rat identification with Deep Learning
 
 ## Citation
 
@@ -8,15 +8,8 @@ DOI:
 
 
 ## Abstract
-We study the performance of Deep Learning techniques for the identification of rats under laboratory conditions. With the purpose of establishing a baseline for the computational analysis of group experiments when it comes to ensuring that the collected data correspond to the correct animal over time. To address this, we established a robust framework to evaluate models based on Convolutional Neural Networks (CNNs). Experiments involved 1.44 million images from 16 rats under controlled conditions, testing the impact of preprocessing (e.g. resolution, color space) and scalability. Results highlight the superiority of CNNs, particularly the ResNet50 architecture, achieving up to 93\% accuracy with frame sequences, surpassing single-frame analysis. While preprocessing decisions significantly influenced outcomes, data augmentation yielded limited benefits. This work provides a benchmark for applying deep learning in animal identification, offering insights for future improvements and applications in behavioral research
-
-## Highlights
-
-*	
-*	
-*	
-*	
-
+A major challenge in analysing laboratory experiments with unmarked animals is being able to tell which animal is which at any given moment and over time. We explore the effectiveness of Deep Learning techniques for identifying laboratory rats, by training and testing Convolutional Neural Networks and other models on a dataset of 1.44 million images of 16 rats under controlled conditions. Establishing the first baseline for unmarked animal identification in behavioural research.
+We evaluate the scalability of these techniques and examine how image properties and learning parameters influence their performance. Our results demonstrate that the identification accuracy can exceed 90% for a moderate number of individuals without using additional knowledge such as heuristics or body part information. However, they also cast doubt on widely accepted claims in the scientific literature that Deep Learning techniques can reliably distinguish up to 100 unmarked animals in experimental settings.
 
 # Questions?
 If you have any questions, please feel free to contact us!
